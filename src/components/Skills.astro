@@ -1,5 +1,13 @@
 ---
-import { skills } from '../data/skills';
+import { skills, skillPreviewCount } from '../data/skills';
+import { site } from '../data/site';
+import { t, type Lang } from '../data/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
 ---
 
 <section id="skills" class="section-wrapper animate-on-scroll">
@@ -16,9 +24,26 @@ import { skills } from '../data/skills';
               <div class="skill-line" aria-hidden="true"></div>
             </div>
             <div class="skill-pills">
-              {category.items.map((item) => (
+              {category.items.slice(0, skillPreviewCount).map((item) => (
                 <span class="skill-pill">{item}</span>
               ))}
+              {category.items.length > skillPreviewCount && (
+                <>
+                  <input
+                    type="checkbox"
+                    id={`skills-more-${category.number}`}
+                    class="skill-more-toggle visually-hidden"
+                    aria-label={`${t(site.ui.showAllSkills, lang)}: ${category.title}`}
+                  />
+                  {category.items.slice(skillPreviewCount).map((item) => (
+                    <span class="skill-pill skill-pill--extra">{item}</span>
+                  ))}
+                  <label for={`skills-more-${category.number}`} class="skill-pill skill-more" aria-hidden="true">
+                    <span class="skill-more-open">+{category.items.length - skillPreviewCount}</span>
+                    <span class="skill-more-close">{t(site.ui.less, lang)}</span>
+                  </label>
+                </>
+              )}
             </div>
           </div>
         ))}
@@ -94,5 +119,37 @@ import { skills } from '../data/skills';
     border-color: var(--accent-gold);
     background-color: rgba(212, 181, 114, 0.06);
     box-shadow: 0 0 10px rgba(212, 181, 114, 0.15);
+  }
+
+  /* Collapsed extra skills, revealed by the "+N" toggle */
+  .skill-pill--extra {
+    display: none;
+  }
+
+  .skill-more-toggle:checked ~ .skill-pill--extra {
+    display: block;
+  }
+
+  .skill-more {
+    border-style: dashed;
+    color: var(--accent-gold);
+    user-select: none;
+  }
+
+  .skill-more-close {
+    display: none;
+  }
+
+  .skill-more-toggle:checked ~ .skill-more .skill-more-open {
+    display: none;
+  }
+
+  .skill-more-toggle:checked ~ .skill-more .skill-more-close {
+    display: inline;
+  }
+
+  .skill-more-toggle:focus-visible ~ .skill-more {
+    outline: 1px solid var(--accent-gold);
+    outline-offset: 2px;
   }
 </style>

@@ -1,5 +1,13 @@
 ---
 import { researchTopics } from '../data/research';
+import { site } from '../data/site';
+import { t, type Lang } from '../data/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
 ---
 
 <section id="research" class="section-wrapper animate-on-scroll">
@@ -9,18 +17,17 @@ import { researchTopics } from '../data/research';
       <p class="mono-label">// research</p>
       <div class="research-content">
         <p class="research-intro">
-          I plan to start a Ph.D. program at the end of 2026. Current areas of interest:
+          {t(site.research.intro, lang)}
         </p>
         <ul class="research-list" role="list">
           {researchTopics.map((topic) => (
             <li class="research-item">
               <span class="research-arrow" aria-hidden="true">→</span>
-              <span>{topic}</span>
+              <span>{t(topic, lang)}</span>
             </li>
           ))}
         </ul>
-        <p class="research-footer">
-        </p>
+        <p class="research-footer">{t(site.research.footer, lang)}</p>
       </div>
     </div>
   </div>
@@ -49,6 +56,7 @@ import { researchTopics } from '../data/research';
     font-size: 14px;
     line-height: 1.8;
     color: var(--text-secondary);
+    white-space: pre-line;
   }
 
   .research-list {

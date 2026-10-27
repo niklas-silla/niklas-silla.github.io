@@ -1,16 +1,35 @@
 ---
 import { site } from '../data/site';
+import { languages, homePath, t, type Lang } from '../data/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const otherLang = languages.find((l) => l !== lang)!;
 ---
 
 <header>
   <nav class="nav-inner">
     <span class="nav-name mono-label">{site.name}</span>
-    <ul class="nav-links" role="list">
-      <li><a href="#about">// about</a></li>
-      <li><a href="#skills">// skills</a></li>
-      <li><a href="#research">// research</a></li>
-      <li><a href="#contact">// contact</a></li>
-    </ul>
+    <div class="nav-right">
+      <ul class="nav-links" role="list">
+        <li><a href="#about">// about</a></li>
+        <li><a href="#journey">// journey</a></li>
+        <li><a href="#skills">// skills</a></li>
+        <li><a href="#research">// research</a></li>
+        <li><a href="#contact">// contact</a></li>
+      </ul>
+      <a
+        class="lang-switch"
+        href={homePath(otherLang)}
+        hreflang={otherLang}
+        lang={otherLang}
+        aria-label={t(site.ui.switchLanguage, lang)}
+        title={t(site.ui.switchLanguage, lang)}
+      >{lang.toUpperCase()}</a>
+    </div>
   </nav>
 </header>
 
@@ -57,6 +76,29 @@ import { site } from '../data/site';
   .nav-links a:hover {
     color: var(--text-primary);
     text-shadow: 0 0 10px rgba(212, 181, 114, 0.3);
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  /* Shows the active language; a click switches to the other one */
+  .lang-switch {
+    padding: 4px 8px;
+    border: 0.5px solid rgba(212, 181, 114, 0.4);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--accent-gold);
+    transition: border-color 200ms ease, background-color 200ms ease;
+  }
+
+  .lang-switch:hover {
+    border-color: var(--accent-gold);
+    background-color: rgba(212, 181, 114, 0.06);
   }
 
   @media (max-width: 639px) {

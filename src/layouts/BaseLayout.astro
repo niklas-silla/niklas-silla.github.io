@@ -6,18 +6,16 @@ import '@fontsource/jetbrains-mono/400.css';
 import '../styles/tokens.css';
 import '../styles/global.css';
 import { site } from '../data/site';
+import { languages, defaultLang, homePath, t, type Lang } from '../data/i18n';
 
 interface Props {
   title?: string;
   description?: string;
-  lang?: string;
+  lang?: Lang;
 }
 
-const {
-  title = site.name,
-  description = site.description,
-  lang = 'de',
-} = Astro.props;
+const { lang = defaultLang } = Astro.props;
+const { title = site.name, description = t(site.description, lang) } = Astro.props;
 ---
 
 <!doctype html>
@@ -29,6 +27,10 @@ const {
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {languages.map((l) => (
+      <link rel="alternate" hreflang={l} href={new URL(homePath(l), Astro.site)} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={new URL(homePath(defaultLang), Astro.site)} />
   </head>
   <body>
     <slot />

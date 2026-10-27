@@ -1,20 +1,27 @@
 ---
 import { site } from '../data/site';
+import { t, type Lang } from '../data/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
 ---
 
 <section class="quickfacts animate-on-scroll" aria-label="Quick Facts">
   <div class="quickfacts-inner">
     <div class="fact">
       <p class="mono-label">// background</p>
-      <p class="fact-value">{site.quickFacts.background}</p>
+      <p class="fact-value">{t(site.quickFacts.background, lang)}</p>
     </div>
     <div class="fact">
       <p class="mono-label">// focus</p>
-      <p class="fact-value">{site.quickFacts.focus}</p>
+      <p class="fact-value">{t(site.quickFacts.focus, lang)}</p>
     </div>
     <div class="fact">
       <p class="mono-label">// next</p>
-      <p class="fact-value">{site.quickFacts.next}</p>
+      <p class="fact-value">{t(site.quickFacts.next, lang)}</p>
     </div>
   </div>
 </section>

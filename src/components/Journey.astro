@@ -1,0 +1,195 @@
+---
+import { journey } from '../data/journey';
+import { t, type Lang } from '../data/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+
+// Git-style graph: what connects each station to the one below it.
+const stations = journey.map((station, i) => {
+  const next = journey[i + 1];
+  const branch = Boolean(station.parallel);
+  const nextBranch = Boolean(next?.parallel);
+  return {
+    ...station,
+    branch,
+    mainLine: Boolean(next),
+    branchLine: branch && nextBranch,
+    fork: branch && next !== undefined && !nextBranch,
+    merge: !branch && nextBranch,
+  };
+});
+---
+
+<section id="journey" class="section-wrapper animate-on-scroll">
+  <div class="section-inner">
+    <h2 class="visually-hidden">Journey</h2>
+    <div class="label-grid">
+      <p class="mono-label">// journey</p>
+      <ol class="journey-list" role="list">
+        {stations.map((station) => (
+          <li class:list={['journey-item', { 'journey-item--branch': station.branch }]}>
+            <span class="journey-graph" aria-hidden="true">
+              {station.mainLine && <span class="graph-line graph-line--main"></span>}
+              {station.branchLine && <span class="graph-line graph-line--branch"></span>}
+              {station.fork && <span class="graph-curve graph-curve--fork"></span>}
+              {station.merge && <span class="graph-curve graph-curve--merge"></span>}
+              <span class="graph-node"></span>
+            </span>
+            <p class="journey-period">{t(station.period, lang)}</p>
+            <div class="journey-body">
+              <p class="journey-title">
+                {t(station.role, lang)}
+                <span class="journey-sep" aria-hidden="true"> · </span>
+                <span class="journey-org">{t(station.org, lang)}</span>
+              </p>
+              <p class="journey-description">{t(station.description, lang)}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .journey-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .journey-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 0 24px;
+    align-items: baseline;
+    padding-left: 44px;
+  }
+
+  /*
+   * Git-style path: main lane at x=3, side branch at x=19.
+   * Every segment runs from this station's node (y=12) to the next one,
+   * i.e. 28px list gap + 12px below the item.
+   */
+  .journey-graph {
+    --line: rgba(212, 181, 114, 0.3);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .graph-node {
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 7px;
+    height: 7px;
+    border: 1px solid var(--accent-gold);
+    border-radius: 50%;
+    background-color: var(--bg-primary);
+  }
+
+  .journey-item--branch .graph-node {
+    left: 16px;
+  }
+
+  .journey-item:first-child .graph-node {
+    background-color: var(--accent-gold);
+    box-shadow: 0 0 8px rgba(212, 181, 114, 0.5);
+  }
+
+  .graph-line {
+    position: absolute;
+    top: 12px;
+    bottom: -40px;
+    width: 1px;
+    background-color: var(--line);
+  }
+
+  .graph-line--main {
+    left: 3px;
+  }
+
+  .graph-line--branch {
+    left: 19px;
+  }
+
+  .graph-curve {
+    position: absolute;
+    left: 3px;
+    width: 17px;
+    top: 12px;
+    bottom: -40px;
+    border: 0 solid var(--line);
+  }
+
+  /* Branch station above main station: bend down-left into the main lane */
+  .graph-curve--fork {
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-bottom-right-radius: 12px;
+  }
+
+  /* Main station above branch station: bend right-down into the side lane */
+  .graph-curve--merge {
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-top-right-radius: 12px;
+  }
+
+  .journey-period {
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  .journey-title {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+
+  .journey-sep {
+    color: var(--accent-gold);
+  }
+
+  .journey-org {
+    color: var(--text-tertiary);
+  }
+
+  .journey-description {
+    margin-top: 6px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    white-space: pre-line;
+  }
+
+  @media (max-width: 639px) {
+    .journey-item {
+      grid-template-columns: 1fr;
+      gap: 4px 0;
+    }
+  }
+</style>

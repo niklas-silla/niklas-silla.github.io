@@ -1,4 +1,12 @@
 ---
+import { site } from '../data/site';
+import { t, type Lang } from '../data/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
 ---
 
 <section id="about" class="section-wrapper animate-on-scroll">
@@ -7,12 +15,9 @@
     <div class="label-grid">
       <p class="mono-label">// about</p>
       <div class="about-content">
-        <p class="about-para">
-          I work at the intersection of <strong data-astro-cid-v2cbyr3p>information systems</strong> and <strong data-astro-cid-v2cbyr3p>applied AI</strong> — from individual automation pipelines to multi-agent architectures, both in research and in applied settings.
-        </p>
-        <p class="about-para">
-          My research interests center on the reliability and explainability of agentic systems, their architecture, and concrete application domains such as energy management. I plan to pursue these directions further as part of a PhD.
-        </p>
+        {site.about.map((para) => (
+          <p class="about-para" set:html={t(para, lang)} />
+        ))}
       </div>
     </div>
   </div>

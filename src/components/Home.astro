@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from './Nav.astro';
+import Hero from './Hero.astro';
+import QuickFacts from './QuickFacts.astro';
+import About from './About.astro';
+import Journey from './Journey.astro';
+import Skills from './Skills.astro';
+import Research from './Research.astro';
+import Contact from './Contact.astro';
+import type { Lang } from '../data/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<BaseLayout lang={lang}>
+  <Nav lang={lang} />
+  <main>
+    <Hero lang={lang} />
+    <QuickFacts lang={lang} />
+    <About lang={lang} />
+    <Journey lang={lang} />
+    <Skills lang={lang} />
+    <Research lang={lang} />
+  </main>
+  <Contact />
+</BaseLayout>

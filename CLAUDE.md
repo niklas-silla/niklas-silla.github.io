@@ -2,208 +2,126 @@
 
 ## Projekt
 Personal Website für Niklas Silla (AI Engineer & Automation Developer).
+Einseitige Seite auf Englisch (`/`) und Deutsch (`/de/`).
 
 ## Tech-Stack (festgelegt)
 
 - **Astro** (statisches Framework, keine Hydration nötig)
 - **Vanilla CSS** mit CSS Custom Properties (KEIN Tailwind, KEIN CSS-in-JS)
-- **TypeScript** für Daten-Files (Skills, Research-Themen)
-- **Hosting**: Cloudflare Pages oder Vercel (Niklas entscheidet beim Deploy)
+- **TypeScript** für Daten-Files (Texte, Skills, Journey, Research-Themen)
+- **Hosting**: GitHub Pages via GitHub Actions (`https://niklas-silla.github.io`)
 
-Begründung: Skill-Liste und Research-Themen sollen pflegbar in Daten-Files liegen. Astro rendert das beim Build zu reinem HTML, ohne JavaScript an den Browser auszuliefern. Vanilla CSS, weil DESIGN.md sehr token-basiert ist und Tailwind den HTML hier nur unnötig aufblähen würde.
+Begründung: Inhalte sollen pflegbar in Daten-Files liegen. Astro rendert das beim Build zu reinem HTML, ohne JavaScript an den Browser auszuliefern. Vanilla CSS, weil DESIGN.md sehr token-basiert ist und Tailwind den HTML hier nur unnötig aufblähen würde.
 
 ## Wichtige Dokumente
 
-- `BRIEF.md` — Konzept, Inhalte, Sektionen, Tonalität
 - `DESIGN.md` — exakte Design-Spezifikation (Farben, Typo, Komponenten)
-- `linkedin_banner.jpg` — visuelle Referenz, das Design knüpft daran an
-- `assets/profile.png` — Profilfoto (freigestellt, transparent)
+- `src/assets/profile.png` — Profilfoto (freigestellt, transparent), wird über `astro:assets` als WebP ausgeliefert
 
-## Empfohlene Projektstruktur
+## Projektstruktur
 
 ```
-personal-site/
 ├── astro.config.mjs
-├── package.json
-├── tsconfig.json
 ├── public/
-│   └── assets/
-│       ├── profile.png
-│       └── favicon.svg
+│   └── favicon.svg
 ├── src/
+│   ├── assets/
+│   │   └── profile.png
 │   ├── pages/
-│   │   └── index.astro          ← Haupt-Seite, importiert alle Sektionen
+│   │   ├── index.astro          ← Englisch, rendert <Home lang="en" />
+│   │   └── de/index.astro       ← Deutsch, rendert <Home lang="de" />
 │   ├── layouts/
-│   │   └── BaseLayout.astro     ← <html>, <head>, globale Styles
+│   │   └── BaseLayout.astro     ← <html lang>, <head>, hreflang-Links, Scroll-Animation
 │   ├── components/
-│   │   ├── Nav.astro
+│   │   ├── Home.astro           ← Seitenaufbau, den beide Sprachen teilen
+│   │   ├── Nav.astro            ← inkl. Sprach-Umschalter (zeigt aktive Sprache)
 │   │   ├── Hero.astro
 │   │   ├── QuickFacts.astro
 │   │   ├── About.astro
-│   │   ├── Skills.astro
+│   │   ├── Journey.astro        ← Werdegang als Git-Graph
+│   │   ├── Skills.astro         ← Pills mit "+N"-Toggle (reines CSS)
 │   │   ├── Research.astro
 │   │   └── Contact.astro
 │   ├── data/
-│   │   ├── skills.ts            ← Skill-Daten (siehe unten)
-│   │   ├── research.ts          ← Research-Themen
-│   │   └── site.ts              ← Name, Tagline, Links (zentrale Stelle)
+│   │   ├── i18n.ts              ← Sprachen, Text-Typ, t(), homePath()
+│   │   ├── site.ts              ← Hero, QuickFacts, About, Research-Texte, UI-Texte, Links
+│   │   ├── journey.ts           ← Werdegang-Stationen
+│   │   ├── skills.ts            ← Skill-Kategorien
+│   │   └── research.ts          ← Research-Themen
 │   └── styles/
 │       ├── tokens.css           ← CSS Custom Properties (alle Farben, Spacings)
 │       └── global.css           ← Reset, Body, Grid-Hintergrund, Typo-Defaults
-└── README.md                    ← Pflege-Anleitung für Niklas
+└── .github/workflows/           ← Deploy auf GitHub Pages
 ```
 
-## Daten-Files (KRITISCH — bitte genau so umsetzen)
+## Daten-Files (KRITISCH)
+
+Alle sichtbaren Texte liegen in `src/data/`. Komponenten enthalten keine Inhalte, nur Markup und Styles.
+
+### Mehrsprachigkeit (`src/data/i18n.ts`)
+
+- Jeder Text hat den Typ `Text`: ein String gilt für beide Sprachen, ein Objekt `{ en: "...", de: "..." }` hält je eine Version.
+- Komponenten bekommen `lang` als Prop und lösen Texte mit `t(text, lang)` auf.
+- Neue Sprache: in `languages` ergänzen, `src/pages/<lang>/index.astro` anlegen, Texte ergänzen.
+- Bewusst **englisch auf beiden Seiten**: `//`-Labels und Nav-Links, Tagline, Skill-Kategorien und Skill-Namen, Berufstitel (AI Engineer, Automation Expert), Fokus-Zeile. Studiengänge, Organisationen und Fließtext werden übersetzt.
+- Im deutschen Fließtext "KI" statt "AI"; überall "PhD" (nicht "Ph.D.").
 
 ### `src/data/skills.ts`
 
-```ts
-export type SkillCategory = {
-  number: string;     // "01", "02", ...
-  title: string;
-  items: string[];
-};
+- `skillPreviewCount` legt fest, wie viele Pills pro Kategorie sichtbar sind; der Rest steckt hinter dem "+N"-Toggle.
+- Die Reihenfolge in `items` bestimmt, welche Skills zuerst sichtbar sind.
+- Niemals Skills im Komponenten-HTML hardcoden.
 
-export const skills: SkillCategory[] = [
-  {
-    number: "01",
-    title: "AI & Agentic Systems",
-    items: ["LangChain", "LangGraph", "LLM Orchestration", "RAG", "Tool-Use", "Vector DBs", "Prompt Engineering", "Evaluation"],
-  },
-  {
-    number: "02",
-    title: "Automation & Workflows",
-    items: ["n8n", "Make", "Zapier", "REST APIs", "Webhooks", "Custom Nodes"],
-  },
-  {
-    number: "03",
-    title: "Engineering",
-    items: ["Python", "TypeScript", "FastAPI", "PostgreSQL", "Docker", "Git", "CI/CD"],
-  },
-  {
-    number: "04",
-    title: "Research & Methods",
-    items: ["Wirtschaftsinformatik", "Process Modeling", "Design Science", "Qualitative Research", "LaTeX"],
-  },
-];
-```
+### `src/data/journey.ts`
 
-Niklas pflegt diese Datei selbst. Niemals Skills im Komponenten-HTML hardcoden.
-
-### `src/data/research.ts`
-
-```ts
-export const researchTopics: string[] = [
-  "Reliability und Evaluation von Agentic Systems",
-  "Tool-Use als Entscheidungsproblem",
-  "AI in betrieblichen Workflows (WI-Perspektive)",
-];
-```
+- Neueste Station zuerst.
+- `parallel: true` setzt eine Station auf den Seitenzweig des Git-Graphen (z. B. Werkstudent neben dem Studium). Aufeinanderfolgende parallele Stationen bilden einen Zweig.
+- `\n` in `description` erzeugt einen Zeilenumbruch.
 
 ### `src/data/site.ts`
 
-```ts
-export const site = {
-  name: "Niklas Silla",
-  role: "AI Engineer & Automation Developer",
-  tagline: "// crafting intelligent systems",
-  description: "Ich baue agentische Systeme und Automation-Workflows — dort, wo Sprachmodelle aufhören, nur Text zu generieren, und anfangen, Entscheidungen zu treffen.",
-  techStack: ["LLM", "LangChain", "n8n", "Python"],
-  quickFacts: {
-    background: "M.Sc. Wirtschaftsinformatik",
-    focus: "Agentic AI · Workflows",
-    next: "PhD ab Ende 2026",
-  },
-  links: {
-    email: "mailto:...",   // Niklas trägt ein
-    linkedin: "https://linkedin.com/in/...",
-    github: "https://github.com/...",
-    scholar: "https://scholar.google.com/...",
-  },
-};
-```
+- In `about` markiert `<strong>…</strong>` die goldenen Hervorhebungen (wird per `set:html` gerendert).
+- `\n` im Research-Intro erzeugt einen Zeilenumbruch.
 
-## Vorgehen — Sektion für Sektion
+## Zusammenarbeit mit Niklas
 
-**Schritt 1: Setup**
-- `npm create astro@latest` mit minimalem Template, TypeScript: strict
-- `tokens.css` und `global.css` aus DESIGN.md anlegen
-- `BaseLayout.astro` mit Grid-Hintergrund, eingebundener Inter + JetBrains Mono (über Fontsource oder lokale Files)
-- Daten-Files anlegen (oben)
-- Halt machen, Niklas zeigen, ob die Tokens korrekt geladen sind (leere Seite mit Grid-Hintergrund)
-
-**Schritt 2: Hero**
-- `<Hero>` aufbauen mit Mono-Tagline, Name, Gold-Linie, Rolle, Beschreibung, Tech-Stack
-- Foto rechts mit `mask-image` für sanftes Auslaufen ins Schwarz (siehe DESIGN.md)
-- Glow hinter Foto via radial-gradient
-- Niklas zeigen, Feedback einholen
-
-**Schritt 3: QuickFacts**
-- Drei-Spalten-Leiste mit Mono-Labels
-- Niklas zeigen
-
-**Schritt 4: About**
-- Zwei Absätze, Highlights in Gold
-- Mono-Label-Layout: 160px-Spalte links, Content rechts
-
-**Schritt 5: Skills**
-- Pflicht: aus `skills.ts` rendern, niemals hardcoden
-- Pro Kategorie: nummeriertes Goldlabel + Titel + horizontale Linie + Pills
-- Pills mit Hover-State (siehe DESIGN.md)
-
-**Schritt 6: Research**
-- Liste mit goldenen Pfeil-Bullets
-- Italic-Schluss-Satz unten
-
-**Schritt 7: Contact**
-- Schmale Footer-Zeile, Mono-Label links, Links rechts
-- Erster Link (email) in Gold, Rest gedimmt
-
-**Schritt 8: Polish**
-- Scroll-Animationen via IntersectionObserver (subtil, einmalig, fade + 12px translateY)
-- Responsive Test bei 375 / 768 / 1280px
-- Lighthouse-Check (Ziel: Performance 100, Accessibility ≥95)
-- `prefers-reduced-motion` respektieren
+- Größere Änderungen erst als Vorschlag mit ihm durchgehen, dann umsetzen. Kleine, konkrete Wünsche direkt erledigen.
+- Neue deutsche Texte sind Entwürfe, die Niklas prüft.
+- Nur committen, wenn er es ausdrücklich möchte.
 
 ## Was NICHT machen
 
 - **Kein Tailwind** einführen, auch wenn es schneller scheint
-- **Keine zusätzlichen Sektionen**, die nicht im BRIEF.md stehen (Testimonials, Newsletter, Contact-Form — bewusst weggelassen)
-- **Skills nicht hardcoden** — immer aus `skills.ts` lesen
-- **Keine Roboter-Illustrationen** aus dem Banner — die Website nutzt nur Grid und Knoten-Motiv
+- **Keine zusätzlichen Sektionen** ohne Rücksprache (Testimonials, Newsletter, Contact-Form — bewusst weggelassen)
+- **Keine Inhalte in Komponenten hardcoden** — immer aus `src/data/` lesen
+- **Keine Roboter-Illustrationen** — die Website nutzt nur Grid und Knoten-Motiv
 - **Kein Terminal-Look** (kein blinkender Cursor, keine `$`-Prompts)
-- **Keine schweren Animations-Libs** (kein GSAP, kein Framer Motion, kein Lottie) — alles soll mit reinem CSS + IntersectionObserver gehen
+- **Keine schweren Animations-Libs** (kein GSAP, kein Framer Motion, kein Lottie) — alles mit reinem CSS + IntersectionObserver
 - **Skill-Pills nicht runden**: max. `border-radius: 3px` (siehe DESIGN.md)
 - **Keine Schatten** unter Cards/Pills — alles flach
-- **Keine zentrierten Layouts** — alles linksbündig
+- **Keine zentrierten Layouts** — alles linksbündig (Ausnahme: Hero gestapelt auf Tablet/Mobil)
+- `prefers-reduced-motion` respektieren
 
-## Pflege durch Niklas (nach Launch)
+## Pflege durch Niklas
 
 Niklas sollte ohne Code-Verständnis:
 - **Skills hinzufügen**: `src/data/skills.ts` editieren, einen String anhängen
 - **Neue Skill-Kategorie**: ein Objekt anhängen, Nummer hochzählen
-- **Texte ändern**: `src/data/site.ts` editieren
+- **Journey-Station hinzufügen**: Objekt oben in `src/data/journey.ts` einfügen
+- **Texte ändern**: `src/data/site.ts` editieren (je `en` und `de`)
 - **Research-Themen**: `src/data/research.ts` editieren
 
-Schreibe dazu eine `README.md` im Projekt-Root mit klaren Anleitungen für genau diese vier Operationen. Beispiele beilegen.
+Offen: eine `README.md` im Projekt-Root mit klaren Anleitungen und Beispielen für genau diese Operationen.
 
-## Spätere Erweiterungen (nicht jetzt umsetzen, nur vorbereiten)
+## Spätere Erweiterungen (nicht jetzt umsetzen)
 
-Astro wurde gewählt, weil später möglich sein soll:
 - **Blog** via Content Collections (`src/content/blog/*.md`)
-- **Mehrsprachigkeit** Deutsch/Englisch via Astro-i18n
-- **Unterseiten** wie `/now`, `/research`
+- **Unterseiten** wie `/now`, `/research` — dann pro Sprache unter `src/pages/` und `src/pages/de/`
 
-Strukturiere den Code so, dass diese Erweiterungen nicht zu Refactoring zwingen. Konkret:
-- `BaseLayout.astro` sollte schon `lang`-Attribut akzeptieren
-- Texte in `site.ts` so strukturieren, dass sie später in `de.ts` / `en.ts` aufgeteilt werden können
-- Aber: kein Over-Engineering — nicht jetzt schon i18n-Library installieren
+Kein Over-Engineering: keine i18n-Library installieren, das eigene `t()` reicht.
 
 ## Deployment
 
-Vorschlag: Cloudflare Pages.
-- Build-Command: `npm run build`
-- Build-Output: `dist`
-- Node-Version: 20+
-
-Domain später hinzufügen.
+- GitHub Pages, ausgelöst durch Push auf `main` (GitHub Actions)
+- Build-Command: `npm run build`, Output: `dist`, Node 20+
+- `site` in `astro.config.mjs` muss zur Domain passen (wird für hreflang-URLs genutzt)

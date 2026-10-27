@@ -2,16 +2,23 @@
 import { Image } from 'astro:assets';
 import { site } from '../data/site';
 import profileImg from '../assets/profile.png';
+import { t, type Lang } from '../data/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
 ---
 
 <section class="hero section-wrapper">
   <div class="hero-inner section-inner">
     <div class="hero-content">
-      <p class="hero-tag mono-label">{site.tagline}</p>
+      <p class="hero-tag mono-label">{t(site.tagline, lang)}</p>
       <h1 class="hero-name">{site.name}</h1>
       <div class="hero-gold-line" aria-hidden="true"></div>
       <p class="hero-role">{site.role}</p>
-      <p class="hero-description">{site.description}</p>
+      <p class="hero-description">{t(site.description, lang)}</p>
       <p class="hero-stack">
         {site.techStack.map((item, i) => (
           <>
